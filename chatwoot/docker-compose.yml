@@ -1,0 +1,50 @@
+# Archivo docker-compose.yml oficial do Chatwoot ajustado para deploy local
+version: '3.7'
+
+services:
+  db:
+    image: postgres:12-alpine
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=chatwoot_production
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    command: ["redis-server", "--requirepass", "redispassword"]
+    volumes:
+      - redis_data:/var/lib/redis/data
+
+  rails:
+    image: chatwoot/chatwoot:latest
+    restart: always
+    env_file: .env
+    volumes:
+      - storage_data:/app/storage
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "3000:3000"
+    entrypoint: docker/entrypoints/rails.sh
+    command: bundle exec rails s -p 3000 -b 0.0.0.0
+
+  sidekiq:
+    image: chatwoot/chatwoot:latest
+    restart: always
+    env_file: .env
+    volumes:
+      - storage_data:/app/storage
+    depends_on:
+      - db
+      - redis
+    command: bundle exec sidekiq -C config/sidekiq.yml
+
+volumes:
+  postgres_data:
+  redis_data:
+  storage_data:

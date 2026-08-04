@@ -1,0 +1,114 @@
+version: '3.8'
+
+networks:
+  levser_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  storage_data:
+  evolution_instances:
+  n8n_data:
+
+services:
+  # --- BANCO DE DADOS POSTGRESQL (CHATWOOT + EVOLUTION) ---
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: levser_postgres
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=chatwoot_production
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - levser_net
+
+  # --- REDIS (CHATWOOT) ---
+  redis:
+    image: redis:6.2-alpine
+    container_name: levser_redis
+    restart: always
+    command: ["redis-server", "--requirepass", "redispassword"]
+    volumes:
+      - redis_data:/var/lib/redis/data
+    networks:
+      - levser_net
+
+  # --- CHATWOOT WEB SERVER ---
+  chatwoot_rails:
+    image: chatwoot/chatwoot:latest
+    container_name: levser_chatwoot
+    restart: always
+    env_file: ./chatwoot/.env
+    volumes:
+      - storage_data:/app/storage
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "3000:3000"
+    entrypoint: docker/entrypoints/rails.sh
+    command: bundle exec rails s -p 3000 -b 0.0.0.0
+    networks:
+      - levser_net
+
+  # --- CHATWOOT SIDEKIQ (WORKER) ---
+  chatwoot_sidekiq:
+    image: chatwoot/chatwoot:latest
+    container_name: levser_chatwoot_sidekiq
+    restart: always
+    env_file: ./chatwoot/.env
+    volumes:
+      - storage_data:/app/storage
+    depends_on:
+      - db
+      - redis
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    networks:
+      - levser_net
+
+  # --- EVOLUTION API (WHATSAPP) ---
+  evolution_api:
+    image: evoapicloud/evolution-api:latest
+    container_name: levser_evolution
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_URL=http://localhost:8080
+      - DOCKER_ENV=true
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://postgres:postgres@db:5432/chatwoot_production
+      - AUTHENTICATION_TYPE=apikey
+      - AUTHENTICATION_API_KEY=levser_secret_key_123
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      - LOG_LEVEL=ERROR,WARN,DEBUG,INFO,LOG_WEBHOOKS
+      - DEL_INSTANCE=false
+      - CONFIG_SESSION_PHONE_CLIENT_NAME=LevSer WhatsApp
+    volumes:
+      - evolution_instances:/evolution/instances
+    networks:
+      - levser_net
+
+  # --- N8N (WORKFLOW AUTOMATION) ---
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: levser_n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - levser_net
