@@ -70,8 +70,14 @@
       "parameters": {
         "promptType": "define",
         "text": "={{ $json.body.content }}",
-        "hasSystemMessage": true,
-        "systemMessage": "Você é um assistente inicial da LevSer Saúde. Responda em português, de maneira clara e objetiva, utilizando no máximo duas frases.\n\nA LevSer fica na Avenida Brasil, 173, Jardim Paulista, São Paulo. A Avaliação Estratégica é o primeiro ponto de cuidado para entender o histórico, os objetivos e as possibilidades da pessoa antes da definição da sua jornada.\n\nNão forneça diagnóstico, prescrição ou orientação clínica. Quando não tiver informações suficientes, informe que uma pessoa da equipe continuará o atendimento.",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "System",
+              "message": "Você é um assistente inicial da LevSer Saúde. Responda em português, de maneira clara e objetiva, utilizando no máximo duas frases.\n\nA LevSer fica na Avenida Brasil, 173, Jardim Paulista, São Paulo. A Avaliação Estratégica é o primeiro ponto de cuidado para entender o histórico, os objetivos e as possibilidades da pessoa antes da definição da sua jornada.\n\nNão forneça diagnóstico, prescrição ou orientação clínica. Quando não tiver informações suficientes, informe que uma pessoa da equipe continuará o atendimento."
+            }
+          ]
+        },
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
@@ -85,23 +91,23 @@
     },
     {
       "parameters": {
-        "model": "gpt-4o-mini",
+        "model": "llama-3.3-70b-versatile",
         "options": {
           "temperature": 0.3
         }
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
         500,
         120
       ],
       "id": "4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9a",
-      "name": "OpenAI Model",
+      "name": "Groq Model",
       "credentials": {
-        "openAiApi": {
-          "id": "OPENAI_CREDENTIAL_ID",
-          "name": "OpenAI account"
+        "groqApi": {
+          "id": "jTYKrZrsMiP3mdii",
+          "name": "Groq account"
         }
       }
     },
@@ -114,7 +120,7 @@
           "parameters": [
             {
               "name": "api_access_token",
-              "value": "SEU_CHATWOOT_API_TOKEN_AQUI"
+              "value": "koonobnZRnYoNEDKwr6CbQkf"
             },
             {
               "name": "Content-Type",
@@ -160,7 +166,7 @@
         ]
       ]
     },
-    "OpenAI Model": {
+    "Groq Model": {
       "ai_languageModel": [
         [
           {

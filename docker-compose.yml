@@ -43,6 +43,9 @@ services:
     container_name: levser_chatwoot
     restart: always
     env_file: ./chatwoot/.env
+    environment:
+      - SAFE_FETCH_ALLOW_PRIVATE_NETWORK=true
+      - DISABLE_PERMITTED_URL_VALIDATION=true
     volumes:
       - storage_data:/app/storage
     depends_on:
@@ -61,6 +64,9 @@ services:
     container_name: levser_chatwoot_sidekiq
     restart: always
     env_file: ./chatwoot/.env
+    environment:
+      - SAFE_FETCH_ALLOW_PRIVATE_NETWORK=true
+      - DISABLE_PERMITTED_URL_VALIDATION=true
     volumes:
       - storage_data:/app/storage
     depends_on:
@@ -83,8 +89,13 @@ services:
       - DATABASE_ENABLED=true
       - DATABASE_PROVIDER=postgresql
       - DATABASE_CONNECTION_URI=postgresql://postgres:postgres@db:5432/chatwoot_production
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://:redispassword@redis:6379/1
+      - REDIS_ENABLED=true
+      - REDIS_URI=redis://:redispassword@redis:6379/1
       - AUTHENTICATION_TYPE=apikey
       - AUTHENTICATION_API_KEY=levser_secret_key_123
+      - CHATWOOT_ENABLED=true
       - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
       - LOG_LEVEL=ERROR,WARN,DEBUG,INFO,LOG_WEBHOOKS
       - DEL_INSTANCE=false
