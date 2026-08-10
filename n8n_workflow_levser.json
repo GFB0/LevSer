@@ -115,13 +115,11 @@
       "parameters": {
         "method": "POST",
         "url": "=http://levser_chatwoot:3000/api/v1/accounts/{{ $('Webhook Chatwoot').item.json.body.account.id }}/conversations/{{ $('Webhook Chatwoot').item.json.body.conversation.id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "api_access_token",
-              "value": "koonobnZRnYoNEDKwr6CbQkf"
-            },
             {
               "name": "Content-Type",
               "value": "application/json"
@@ -140,7 +138,13 @@
         -100
       ],
       "id": "5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9a0b",
-      "name": "Enviar Resposta Chatwoot"
+      "name": "Enviar Resposta Chatwoot",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ttTRszn6YSLvmvp8",
+          "name": "Header Auth account"
+        }
+      }
     }
   ],
   "connections": {
